@@ -1,0 +1,54 @@
+/* CSS for GuessComponent component */
+
+.guess-container {
+    display:flex;
+    align-items: center;
+    justify-items: center;
+}
+
+.guess-letter {
+    color: #e7e7e7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    width: 5rem;
+    height: 5rem;
+    margin: 0.5rem;
+    border: solid;
+    border-color: #101010;
+    border-radius: 16px;
+}
+
+    .guess-letter.green {
+        background-color: #509d5a;
+    }
+
+    .guess-letter.grey {
+        background-color: #5e5e5e;
+    }
+
+    .guess-letter.yellow {
+        background-color: #eac638;
+    }
+
+    .guess-letter p {
+        margin: 0;
+        line-height: 1;
+    }
+
+@media (max-width: 700px) {
+    .guess-letter {
+        color: #e7e7e7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        width: 3rem;
+        height: 3rem;
+        margin: 0.25rem;
+        border: solid;
+        border-color: #101010;
+        border-radius: 16px;
+    }
+}

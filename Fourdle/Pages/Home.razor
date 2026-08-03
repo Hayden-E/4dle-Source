@@ -1,0 +1,176 @@
+﻿@page "/"
+@inject GuessService GuessService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Play - 4dle</PageTitle>
+<h1 class="title">4dle</h1>
+<p>4 Letters 4 Attempts</p>
+
+@* <div class="overlay">
+	<p>Today's Free Attempt:</p>
+	<GuessComponent Input="@TodaysGuess"></GuessComponent>
+</div> *@
+
+<div class="game-container"> 
+	
+	@for (int i = 0; i < AllowedGuesses; i++)
+	{
+		if (CurrentGuesses.Count > i)
+		{
+			<div class="game-column">
+				<GuessComponent Input="@CurrentGuesses[i]"></GuessComponent>
+			</div>
+		}
+		else
+		{
+			<div class="game-column">
+				<GuessComponent Input=""></GuessComponent>
+			</div>
+		}
+	}
+
+</div>
+
+@if(LastWasInvalid)
+{
+	<div class="invalid-title">
+		<p>Invalid Word</p>
+	</div>
+}
+else
+{
+	<div class="invalid-title">
+		<p></p>
+	</div>
+}
+
+@if(HasWon)
+{
+	<div class="input-area">
+		<p>You Win!</p>
+		<button @onclick="CopyResults">Copy Results!</button>
+	</div>
+}
+else if (CurrentGuesses.Count >= AllowedGuesses)
+{
+	<div class="input-area">
+		<p>You Lose... The word was '@TodaysWord'</p>
+		<button @onclick="CopyResults">Copy Results!</button>
+	</div>
+}
+else
+{
+	<div class="input-area">
+		<input @onkeydown="HandleSubmitKeyDown" @bind="CurrentInput" @bind:event="oninput" placeholder="Type answer..." type="text" maxlength="4" />
+
+		<button @onclick="AddGuess">Guess</button>
+	</div>
+
+	<div class="free-attempt">
+		<p>Today's Free Attempt:</p>
+		<GuessComponent Input="@TodaysGuess"></GuessComponent>
+	</div>
+}
+
+@code 
+{
+	public int AllowedGuesses = 4;
+	public bool HasWon = false;
+	public bool LastWasInvalid = false;
+
+	public string? TodaysWord;
+	public string? TodaysGuess;
+	public string? CurrentInput;
+	List<string> CurrentGuesses = new List<string>();
+
+	public async void CheckForWin()
+	{
+		if (CurrentGuesses.Count <= 0)
+			return;
+
+		HasWon = await GuessService.CheckWin(GuessService.DefaultSeed(), CurrentGuesses[CurrentGuesses.Count - 1]);
+	}
+
+	public void AddGuess()
+	{
+		if (string.IsNullOrEmpty(CurrentInput))
+			return;
+
+		if (CurrentInput.Length != 4)
+			return;
+
+		if (!GuessService.ValidWord(CurrentInput))
+		{
+			LastWasInvalid = true;
+			return;
+		}
+
+		LastWasInvalid = false;
+
+		CurrentGuesses.Add(CurrentInput.ToUpper());
+		CurrentInput = "";
+		CheckForWin();
+	}
+
+	private void HandleSubmitKeyDown(KeyboardEventArgs e)
+	{
+		if (e.Key == "Enter")
+		{
+			AddGuess();
+		}
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		TodaysWord = await GuessService.GetWordForSeed(GuessService.DefaultSeed());
+		TodaysGuess = await TodaysAttempt();
+	}
+
+	private async Task<string> TodaysAttempt()
+	{
+		string todaysWord = await GuessService.GetWordForSeed(GuessService.DefaultSeed());
+		string word = await GuessService.GetWordWith(1, 0, todaysWord);
+
+		return word;
+	}
+
+	private async void CopyResults()
+	{
+		string todaysWord = await GuessService.GetWordForSeed(GuessService.DefaultSeed());
+
+		StringBuilder builder = new StringBuilder();
+
+		if(HasWon)
+			builder.AppendLine($"4dle {DaysSinceStart()} {CurrentGuesses.Count}/4");
+		else
+			builder.AppendLine($"4dle {DaysSinceStart()} X/4");
+
+		builder.AppendLine();
+
+		for(int i = 0; i < CurrentGuesses.Count; i++)
+		{
+			int[] results = GuessService.GetGuessResultForWord(todaysWord, CurrentGuesses[i]);
+
+			for(int j = 0; j < results.Length; j++)
+			{
+				if (results[j] == 0)
+					builder.Append("⬜");
+				else if (results[j] == 1)
+					builder.Append("🟨");
+				else if (results[j] == 2)
+					builder.Append("🟩");
+			}
+
+			builder.AppendLine();
+		}
+
+		builder.Append("https://hayden-e.github.io/4dle/");
+
+		await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", builder.ToString());
+	}
+
+	private int DaysSinceStart()
+	{
+		return (DateTime.Now - new DateTime(2026, 7, 29)).Days;
+	}
+}

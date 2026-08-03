@@ -1,0 +1,67 @@
+﻿@inject GuessService GuessService
+
+<div class="guess-container">
+
+    @if (!string.IsNullOrEmpty(Input))
+    {
+        <div class="guess-letter @GetColor(0)">
+            <p>@Input[0]</p>
+        </div>
+
+        <div class="guess-letter @GetColor(1)">
+            <p>@Input[1]</p>
+        </div>
+
+        <div class="guess-letter @GetColor(2)">
+            <p>@Input[2]</p>
+        </div>
+
+        <div class="guess-letter @GetColor(3)">
+            <p>@Input[3]</p>
+        </div>
+    }
+    else
+    {
+        @for (int i = 0; i < 4; i++)
+        {
+            <div class="guess-letter">
+                <p></p>
+            </div>
+        }
+    }
+
+</div>
+
+@code
+{
+    [Parameter]
+    public string? Input { get; set; }
+
+    private int[]? Types;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Types = null;
+
+        if (!string.IsNullOrEmpty(Input) && Input.Length == 4)
+        {
+            Types = await GuessService.GetGuessResult(
+                GuessService.DefaultSeed(),
+                Input);
+        }
+    }
+
+    private string GetColor(int index)
+    {
+        if (Types == null || index >= Types.Length)
+            return "grey";
+
+        return Types[index] switch
+        {
+            0 => "grey",
+            1 => "yellow",
+            2 => "green",
+            _ => "grey"
+        };
+    }
+}

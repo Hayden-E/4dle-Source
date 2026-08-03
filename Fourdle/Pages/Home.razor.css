@@ -1,0 +1,110 @@
+/* CSS for Home component */
+
+* {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+}
+
+.overlay {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+}
+
+.free-attempt {
+    display: flex;
+    justify-items: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.free-attempt p {
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding-top: 1.5rem;
+}
+
+.title {
+    font-weight: bold;
+    text-align: center;
+}
+
+.game-container {
+    width: auto;
+    height: 100%;
+
+    /*background-color: #ddd;*/
+    border-radius: 16px;
+
+    flex-direction: column;
+
+    display:flex;
+    align-items: center;
+    justify-items: center;
+}
+
+.game-column {
+    display: flex;
+    gap: 20px;
+}
+
+.invalid-title {
+    margin-top: 1rem;
+}
+
+.input-area {
+    align-items: center;
+    justify-items: center;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.input-area input {
+    border-radius: 10px;
+    width: 15rem;
+    height: 3rem;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.input-area p {
+    font-size: 1.5rem;
+}
+
+.input-area button {
+    
+    display: flex;
+    align-items: center;
+
+    font-size: 1rem;
+    font-weight: bold;
+
+    border-width: 0px;
+    background-color: #84cc62;
+    color: white;
+    border-radius: 0.5rem;
+    width: 20vh;
+    height: 5vh;
+
+    transition: 0.2s;
+}
+
+    .input-area button:hover {
+        background-color: #6fa955;
+        transform: scale(1.05);
+    }
+
+@media (max-width: 700px) {
+    .invalid-title {
+        margin-top: .5rem;
+    }
+
+    .free-attempt p {
+        font-size: 1.5rem;
+        font-weight: bold;
+        padding-top: .5rem;
+    }
+}
