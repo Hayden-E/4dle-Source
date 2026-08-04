@@ -155,7 +155,6 @@ else
 
 	public void UpdateTimer()
 	{
-		Console.WriteLine("Updating timer...");
 		CountdownTimer = (DateTime.Now - DateTime.Now.Date.AddDays(1)).ToString(@"hh\:mm\:ss");
 		StateHasChanged();
 	}
