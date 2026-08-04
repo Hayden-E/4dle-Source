@@ -143,7 +143,14 @@ else
 
 		CurrentGuesses.Clear();
 		CurrentGuesses.AddRange(guesses);
-		HasWon = await GuessService.CheckWin(GuessService.DefaultSeed(), CurrentGuesses[CurrentGuesses.Count - 1]);
+
+		if (CurrentGuesses.Count > 0)
+		{
+			HasWon = await GuessService.CheckWin(
+				GuessService.DefaultSeed(),
+				CurrentGuesses[^1]
+			);
+		}
 
 		LocalStreak = await StorageService.GetCurrentStreak();
 
