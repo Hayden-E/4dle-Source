@@ -1,6 +1,8 @@
 ﻿@page "/"
 @inject GuessService GuessService
+@inject StorageService StorageService
 @inject IJSRuntime JSRuntime
+@using System.Timers;
 
 <PageTitle>Play - 4dle</PageTitle>
 <h1 class="title">4dle</h1>
@@ -29,6 +31,11 @@
 		}
 	}
 
+	@if(LocalStreak != 0)
+	{
+		<p>Current Streak: @LocalStreak 🔥</p>
+	}
+	
 </div>
 
 @if(LastWasInvalid)
@@ -37,24 +44,18 @@
 		<p>Invalid Word</p>
 	</div>
 }
-else
-{
-	<div class="invalid-title">
-		<p></p>
-	</div>
-}
 
 @if(HasWon)
 {
 	<div class="input-area">
-		<p>You Win!</p>
+		<p>You Win! <br /> New word in @CountdownTimer</p>
 		<button @onclick="CopyResults">Copy Results!</button>
 	</div>
 }
 else if (CurrentGuesses.Count >= AllowedGuesses)
 {
 	<div class="input-area">
-		<p>You Lose... The word was '@TodaysWord'</p>
+		<p>You Lose... The word was '@TodaysWord' <br /> New word in @CountdownTimer</p>
 		<button @onclick="CopyResults">Copy Results!</button>
 	</div>
 }
@@ -74,6 +75,8 @@ else
 
 @code 
 {
+	private Timer tickTimer;
+
 	public int AllowedGuesses = 4;
 	public bool HasWon = false;
 	public bool LastWasInvalid = false;
@@ -83,12 +86,23 @@ else
 	public string? CurrentInput;
 	List<string> CurrentGuesses = new List<string>();
 
+	public string CountdownTimer = "";
+
+	public int LocalStreak = 0;
+
 	public async void CheckForWin()
 	{
+		await StorageService.SaveGuesses(CurrentGuesses.ToArray());
+
 		if (CurrentGuesses.Count <= 0)
 			return;
 
 		HasWon = await GuessService.CheckWin(GuessService.DefaultSeed(), CurrentGuesses[CurrentGuesses.Count - 1]);
+
+		if (HasWon)
+			await OnWon();
+		else if (CurrentGuesses.Count >= AllowedGuesses)
+			await StorageService.ResetStreak();
 	}
 
 	public void AddGuess()
@@ -124,6 +138,25 @@ else
 	{
 		TodaysWord = await GuessService.GetWordForSeed(GuessService.DefaultSeed());
 		TodaysGuess = await TodaysAttempt();
+
+		string[] guesses = await StorageService.TodaysGuesses();
+
+		CurrentGuesses.Clear();
+		CurrentGuesses.AddRange(guesses);
+
+		LocalStreak = await StorageService.GetCurrentStreak();
+
+		tickTimer = new Timer(1000);
+		tickTimer.Elapsed += (sender, e) => InvokeAsync(UpdateTimer);
+		tickTimer.AutoReset = true;
+		tickTimer.Enabled = true;
+	}
+
+	public void UpdateTimer()
+	{
+		Console.WriteLine("Updating timer...");
+		CountdownTimer = (DateTime.Now - DateTime.Now.Date.AddDays(1)).ToString(@"hh\:mm\:ss");
+		StateHasChanged();
 	}
 
 	private async Task<string> TodaysAttempt()
@@ -172,5 +205,10 @@ else
 	private int DaysSinceStart()
 	{
 		return (DateTime.Now - new DateTime(2026, 7, 29)).Days;
+	}
+
+	public async Task OnWon()
+	{
+		await StorageService.AddToStreak();
 	}
 }
