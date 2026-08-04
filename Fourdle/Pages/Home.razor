@@ -143,6 +143,7 @@ else
 
 		CurrentGuesses.Clear();
 		CurrentGuesses.AddRange(guesses);
+		HasWon = await GuessService.CheckWin(GuessService.DefaultSeed(), CurrentGuesses[CurrentGuesses.Count - 1]);
 
 		LocalStreak = await StorageService.GetCurrentStreak();
 
@@ -177,6 +178,9 @@ else
 			builder.AppendLine($"4dle {DaysSinceStart()} {CurrentGuesses.Count}/4");
 		else
 			builder.AppendLine($"4dle {DaysSinceStart()} X/4");
+
+		if (LocalStreak != 0)
+			builder.AppendLine($"Current Streak: {LocalStreak} 🔥");
 
 		builder.AppendLine();
 
